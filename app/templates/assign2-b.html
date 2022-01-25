@@ -1,0 +1,116 @@
+<!-- ************************************************************************** -->
+<!-- TCSS 573: Internet of Things (IoT) -->
+<!-- Winter 2022 | Assignment 2 | Part B | HTML file -->
+<!-- ************************************************************************** -->
+<!-- Author: Tsung Jui Wang -->
+<!-- Date: Jan 20, 2022 -->
+<!-- ************************************************************************** -->
+<!-- This code is based on Google's Visualization Gauge code. For more details, go to 
+     https://developers.google.com/chart/interactive/docs/gallery/gauge -->
+<!-- This HTML file  is used to display Google's Gauge charts based on the data 
+	 passed from the Python that reads from the sensor(s). -->
+<!-- if you wish to debug your code online, see an example:
+	 https://jsfiddle.net/api/post/library/pure/ -->
+<html lang="eng">
+    <head>
+        <!-- import the necessary JavsScript files -->
+        <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+        <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+        <script src="https://cdn.socket.io/4.4.1/socket.io.min.js" integrity="sha384-fKnu0iswBIqkjxrhQCTZ7qlLHOFEgNkRmK2vaO/LbTZSXdJfAu6ewRBdwHPhBo/H" crossorigin="anonymous"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+        <script type="text/javascript">
+            // Value for display
+            let distance = 0
+            let temp = 0
+            // Our dataTable
+            let distanceData = null;
+            let tempData = null;
+            // load the guage package from Google Charts
+            google.charts.load('current', {'packages':['gauge']});
+            google.charts.setOnLoadCallback(drawChart);
+            // Our chart instances
+            let distanceGauge = null;
+            let tempGauge = null;
+            // Our options
+            const distanceOptions = {
+                width: 300, height: 300,
+                redFrom: 37, redTo: 45,
+                greenFrom: 36, greenTo: 37,
+                yellowFrom: 25, yellowTo: 36,
+                minorTicks: 5,
+                min: 0, max: 40,
+                animation:{
+                    duration: 200,
+                },
+            };
+
+            // Setup the websocket for distance and temp sensors
+            const distanceIo = io('/distance');
+            distanceIo.on('connect', function() {
+                console.log(`Distance connected`);
+            });
+            // Listen to the "send distance to web" event to retrieve the data
+            distanceIo.on("send distance to web", function(dist) {
+                if (!distanceData) return;
+                if (dist > 40) dist = 40;
+                // Update data
+                distanceData.setValue(0, 1, dist);
+                // Update the plot
+                distanceGauge.draw(distanceData, distanceOptions);
+            });
+            distanceIo.on('disconnect', function() {
+                console.log("Distance is disconnected");
+            });
+
+            const tempIo = io('/temp');
+            tempIo.on('connect', function() {
+                console.log(`Temp connected`);
+            });
+            // Listen to the "send temp to web" event to retrieve the data
+            tempIo.on("send temp to web", function(temp) {
+                console.log(temp);
+                if (!tempData) return;
+                // Update data
+                tempData.setValue(0, 1, temp);
+                // Draw the plot when data is retrieved
+                tempGauge.draw(tempData, distanceOptions);
+            });
+            tempIo.on('disconnect', function() {
+                console.log("Temp is disconnected");
+            });
+
+            // Begin the function that will be used to draw the chart
+            function drawChart() {
+                // Create distance and temperature gauge
+                distanceGauge = new google.visualization.Gauge(document.getElementById('distance_div'));
+                tempGauge = new google.visualization.Gauge(document.getElementById('temp_div'));
+                // The dataTable instance
+                distanceData = google.visualization.arrayToDataTable([
+                   ['Label', 'Value'],
+                   ['Distance', 0]
+                ]);
+                tempData = google.visualization.arrayToDataTable([
+                   ['Label', 'Value'],
+                   ['Temperature', 0]
+                ]);
+                // Draw the plot!
+                distanceGauge.draw(distanceData, distanceOptions);
+                tempGauge.draw(tempData, distanceOptions);
+            }
+          </script>
+        </head>
+    <body>
+       <!-- define the HTML element that needs binding -->
+       <main>
+           <div>
+               <p> Temperature </p>
+               <div id="temp_div"></div>
+           </div>
+           <div>
+               <p> Distance </p>
+               <div id="distance_div"></div>
+           </div>
+       </main>
+    </body>
+</html>
+
