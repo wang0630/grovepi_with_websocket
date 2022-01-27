@@ -11,4 +11,5 @@ class TempNsc(Namespace):
 
     def on_get_temp(self, temp):
         app.logger.info(f"The temp is {temp}")
+        # Send temp data to the web
         emit("send temp to web", temp, broadcast=True)

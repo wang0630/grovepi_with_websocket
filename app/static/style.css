@@ -1,0 +1,17 @@
+.main {
+    display: grid;
+    grid-template-areas: "t u"
+                         "l l";
+}
+
+.t {
+    grid-area: t;
+}
+
+.u {
+    grid-area: u;
+}
+
+.l {
+    grid-area: l;
+}

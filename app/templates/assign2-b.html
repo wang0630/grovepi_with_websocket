@@ -18,10 +18,8 @@
         <script type="text/javascript" src="https://www.google.com/jsapi"></script>
         <script src="https://cdn.socket.io/4.4.1/socket.io.min.js" integrity="sha384-fKnu0iswBIqkjxrhQCTZ7qlLHOFEgNkRmK2vaO/LbTZSXdJfAu6ewRBdwHPhBo/H" crossorigin="anonymous"></script>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+        <link rel="stylesheet" href="{{url_for('static', filename='style.css')}}">
         <script type="text/javascript">
-            // Value for display
-            let distance = 0
-            let temp = 0
             // Our dataTable
             let distanceData = null;
             let tempData = null;
@@ -101,14 +99,17 @@
         </head>
     <body>
        <!-- define the HTML element that needs binding -->
-       <main>
-           <div>
+       <main class="main">
+           <div class="t">
                <p> Temperature </p>
                <div id="temp_div"></div>
            </div>
-           <div>
+           <div class="u">
                <p> Distance </p>
                <div id="distance_div"></div>
+           </div>
+           <div class="l">
+
            </div>
        </main>
     </body>
