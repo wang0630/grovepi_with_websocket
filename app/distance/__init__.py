@@ -9,6 +9,6 @@ class DistanceNsc(Namespace):
         pass
 
     def on_get_distance(self, distance):
-        # app.logger.info(f"The distance is {distance}")
+        app.logger.info(f"The distance is {distance}")
         # Send distance data to the web
         emit("send distance to web", distance, broadcast=True)

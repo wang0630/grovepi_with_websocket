@@ -23,12 +23,14 @@
             // Our dataTable
             let distanceData = null;
             let tempData = null;
+            let lastTenReadingsData = null
             // load the guage package from Google Charts
-            google.charts.load('current', {'packages':['gauge']});
+            google.charts.load('current', {'packages':['gauge', 'corechart']});
             google.charts.setOnLoadCallback(drawChart);
             // Our chart instances
             let distanceGauge = null;
             let tempGauge = null;
+            let tempLineChart = null;
             // Our options
             const distanceOptions = {
                 width: 300, height: 300,
@@ -41,6 +43,16 @@
                     duration: 200,
                 },
             };
+
+            const lastTenReadingsOptions = {
+                title: 'Temperature in last ten readings',
+                titlePosition: 'none',
+                legend: { position: 'bottom' },
+                animation:{
+                    duration: 300,
+                },
+            };
+
 
             // Setup the websocket for distance and temp sensors
             const distanceIo = io('/distance');
@@ -68,10 +80,19 @@
             tempIo.on("send temp to web", function(temp) {
                 console.log(temp);
                 if (!tempData) return;
-                // Update data
+                // Update value of the gauge
                 tempData.setValue(0, 1, temp);
                 // Draw the plot when data is retrieved
                 tempGauge.draw(tempData, distanceOptions);
+                // Add a new row
+                lastTenReadingsData.addRow([lastTenReadingsData.getNumberOfRows() + 1, temp]);
+                // Select the last 10 readings
+                // DataView is the recommended way to choose subset of the values from DataTable
+                const view = new google.visualization.DataView(lastTenReadingsData);
+                // Choose the latest 10 readings
+                view.setRows(view.getFilteredRows([{column: 0, minValue: lastTenReadingsData.getNumberOfRows() - 9}]));
+                // Draw the line
+                tempLineChart.draw(view, lastTenReadingsOptions);
             });
             tempIo.on('disconnect', function() {
                 console.log("Temp is disconnected");
@@ -79,21 +100,31 @@
 
             // Begin the function that will be used to draw the chart
             function drawChart() {
-                // Create distance and temperature gauge
+                // Create distance gauge, temperature gauge and line chart
                 distanceGauge = new google.visualization.Gauge(document.getElementById('distance_div'));
                 tempGauge = new google.visualization.Gauge(document.getElementById('temp_div'));
+                tempLineChart = new google.visualization.LineChart(document.getElementById('last_ten_readings_div'));
+
                 // The dataTable instance
                 distanceData = google.visualization.arrayToDataTable([
                    ['Label', 'Value'],
                    ['Distance', 0]
                 ]);
+
                 tempData = google.visualization.arrayToDataTable([
                    ['Label', 'Value'],
                    ['Temperature', 0]
                 ]);
+
+                lastTenReadingsData = google.visualization.arrayToDataTable([
+                    ['Index', 'Temperature'],
+                    [0, 0],
+                ]);
+
                 // Draw the plot!
                 distanceGauge.draw(distanceData, distanceOptions);
                 tempGauge.draw(tempData, distanceOptions);
+                tempLineChart.draw(lastTenReadingsData, lastTenReadingsOptions);
             }
           </script>
         </head>
@@ -109,7 +140,8 @@
                <div id="distance_div"></div>
            </div>
            <div class="l">
-
+               <p> Last 10 readings of temperature </p>
+               <div id="last_ten_readings_div"></div>
            </div>
        </main>
     </body>

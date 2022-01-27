@@ -1,7 +1,15 @@
 .main {
     display: grid;
+    padding: 30px;
     grid-template-areas: "t u"
                          "l l";
+    grid-template-columns: 50vw 50vw;
+}
+
+main p {
+    text-align: center;
+    font-weight: bold;
+    font-size: 20px;
 }
 
 .t {

@@ -59,12 +59,13 @@ def get_traceback(e):
 class UltraSonicReader:
     def __init__(self):
         self.port = 5
-        self.buzzer_port = 6
+        self.buzzer_port = 3
         self.distance = None
 
     def run(self):
         global gplock
         sleep(10)
+        analogWrite(self.buzzer_port, 0)
         print('****** u thread starts *******')
         try:
             while True:
@@ -73,9 +74,7 @@ class UltraSonicReader:
                     if not sio.connected:
                         print('****** u thread connects *******')
                         sio.connect('http://localhost:5000', namespaces=[namespace, temp_namespace])
-                    analogWrite(self.buzzer_port, 0)
                     dist = ultrasonicRead(self.port)
-
                     if (not math.isnan(dist)) and (dist >= 0):
                         # Emit the get_distance event to the server
                         sio.emit(
@@ -83,11 +82,13 @@ class UltraSonicReader:
                             dist,
                             namespace='/distance'
                         )
-                        print(f'Distance: {dist}')
-                        if 10 < dist <= 30:
-                            analogWrite(self.buzzer_port, 10)
-                        elif dist <= 30:
-                            analogWrite(self.buzzer_port, 100)
+                        # print(f'Distance: {dist}')
+                        if dist <= 10:
+                            analogWrite(self.buzzer_port, 50)
+                        elif 10 < dist <= 15:
+                            analogWrite(self.buzzer_port, 25)
+                        elif 15 < dist <= 20:
+                            analogWrite(self.buzzer_port, 15)
                         else:
                             analogWrite(self.buzzer_port, 0)
                 sleep(.5)
@@ -114,7 +115,7 @@ class TempReader:
 
                 [temp, humidity] = dht(6, 0)
                 if (not math.isnan(temp)) and (not math.isnan(humidity)) and (humidity >= 0):
-                    print(f'Temp: {temp} and humidity: {humidity}')
+                    # print(f'Temp: {temp} and humidity: {humidity}')
                     # Emit the get_distance event to the server
                     sio.emit(
                         'get_temp',
@@ -122,7 +123,7 @@ class TempReader:
                         namespace=temp_namespace
                     )
             # Sleep for 5 seconds and try to acquire the lock again
-            sleep(5)
+            sleep(2)
 
 
 if __name__ == '__main__':
