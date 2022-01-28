@@ -17,10 +17,13 @@ sio = socketio.Client(reconnection=True, reconnection_attempts=100, reconnection
 namespace = "/distance"
 temp_namespace = "/temp"
 
-# Lock
+# Lock for both sensors
 gplock = threading.Lock()
 
 
+# **************************************************************************
+# Event for the socket
+# **************************************************************************
 @sio.event(namespace=namespace)
 def connect():
     print(f"I'm connected from {namespace}!")
@@ -50,10 +53,18 @@ def connect_error(data):
 def disconnect():
     print(f"Disconnect from {temp_namespace}!")
 
+# **************************************************************************
+# Traceback function for debug
+# **************************************************************************
+
 
 def get_traceback(e):
     lines = traceback.format_exception(type(e), e, e.__traceback__)
     return ''.join(lines)
+
+# **************************************************************************
+# Class for ultraSonic sensor
+# **************************************************************************
 
 
 class UltraSonicReader:
@@ -69,11 +80,13 @@ class UltraSonicReader:
         print('****** u thread starts *******')
         try:
             while True:
-                # Connect to server with namespace distance
+                # Try to acquire the lock
                 with gplock:
+                    # Connect to server with namespace distance and temp
                     if not sio.connected:
                         print('****** u thread connects *******')
                         sio.connect('http://localhost:5000', namespaces=[namespace, temp_namespace])
+                    # Read the data
                     dist = ultrasonicRead(self.port)
                     if (not math.isnan(dist)) and (dist >= 0):
                         # Emit the get_distance event to the server
@@ -82,20 +95,21 @@ class UltraSonicReader:
                             dist,
                             namespace='/distance'
                         )
-                        # print(f'Distance: {dist}')
                         if dist <= 10:
+                            analogWrite(self.buzzer_port, 10)
+                        elif 10 < dist <= 20:
                             analogWrite(self.buzzer_port, 50)
-                        elif 10 < dist <= 15:
-                            analogWrite(self.buzzer_port, 25)
-                        elif 15 < dist <= 20:
-                            analogWrite(self.buzzer_port, 15)
                         else:
                             analogWrite(self.buzzer_port, 0)
-                sleep(.5)
+                sleep(.3)
         except Exception as e:
             print('------Start--------')
             print(get_traceback(e))
             print('------End--------')
+
+# **************************************************************************
+# Class for temperature sensor
+# **************************************************************************
 
 
 class TempReader:
@@ -115,14 +129,15 @@ class TempReader:
 
                 [temp, humidity] = dht(6, 0)
                 if (not math.isnan(temp)) and (not math.isnan(humidity)) and (humidity >= 0):
-                    # print(f'Temp: {temp} and humidity: {humidity}')
-                    # Emit the get_distance event to the server
+                    # Emit the get_temp event to the server
                     sio.emit(
                         'get_temp',
                         temp,
                         namespace=temp_namespace
                     )
-            # Sleep for 5 seconds and try to acquire the lock again
+            # Sleep for 2 seconds and try to acquire the lock again
+            # If the timeout is too longer than the ultrasonic sensor relatively(ex. 5 vs .3)
+            # The temperature thread will not be able to acquire the lock
             sleep(2)
 
 

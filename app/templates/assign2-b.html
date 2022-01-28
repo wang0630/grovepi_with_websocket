@@ -1,16 +1,8 @@
 <!-- ************************************************************************** -->
 <!-- TCSS 573: Internet of Things (IoT) -->
-<!-- Winter 2022 | Assignment 2 | Part B | HTML file -->
 <!-- ************************************************************************** -->
 <!-- Author: Tsung Jui Wang -->
-<!-- Date: Jan 20, 2022 -->
 <!-- ************************************************************************** -->
-<!-- This code is based on Google's Visualization Gauge code. For more details, go to 
-     https://developers.google.com/chart/interactive/docs/gallery/gauge -->
-<!-- This HTML file  is used to display Google's Gauge charts based on the data 
-	 passed from the Python that reads from the sensor(s). -->
-<!-- if you wish to debug your code online, see an example:
-	 https://jsfiddle.net/api/post/library/pure/ -->
 <html lang="eng">
     <head>
         <!-- import the necessary JavsScript files -->
@@ -24,7 +16,7 @@
             let distanceData = null;
             let tempData = null;
             let lastTenReadingsData = null
-            // load the guage package from Google Charts
+            // Load the guage package from Google Charts
             google.charts.load('current', {'packages':['gauge', 'corechart']});
             google.charts.setOnLoadCallback(drawChart);
             // Our chart instances
@@ -34,16 +26,15 @@
             // Our options
             const distanceOptions = {
                 width: 300, height: 300,
-                redFrom: 37, redTo: 45,
-                greenFrom: 36, greenTo: 37,
-                yellowFrom: 25, yellowTo: 36,
+                redFrom: 0, redTo: 10,
+                greenFrom: 10, greenTo: 20,
+                yellowFrom: 20, yellowTo: 40,
                 minorTicks: 5,
                 min: 0, max: 40,
                 animation:{
                     duration: 200,
                 },
             };
-
             const lastTenReadingsOptions = {
                 title: 'Temperature in last ten readings',
                 titlePosition: 'none',
@@ -52,7 +43,6 @@
                     duration: 300,
                 },
             };
-
 
             // Setup the websocket for distance and temp sensors
             const distanceIo = io('/distance');
