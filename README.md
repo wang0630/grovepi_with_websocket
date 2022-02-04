@@ -1,5 +1,7 @@
 ## Grovepi + Websocket + Google Chart
 
+### Demo
+![Demo GIF](demo.gif)
 
 ### Run
 `python3 assign2-b.py`
@@ -17,6 +19,3 @@ Files for Websocket are under `/app/distance` and `/app/temp`.
 Google charts is paired with Websocket to provide real-time display.
 1. Two `gauges` are used to display data from `send resources to web` event.
 2. A `lineChart` is used to display the last 10 records of temperature readings.
-
-### Demo
-![Demo GIF](demo.gif)
